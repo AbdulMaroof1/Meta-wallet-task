@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
-
+import config from '../config/config';
 function Login() {
   const { state } = useLocation();
   const [email, setEmail] = useState('admin@gmail.com');
@@ -18,7 +18,7 @@ function Login() {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post(`${config.API_BASE_URL}/auth/login`, {
         email,
         password,
         walletAddress,

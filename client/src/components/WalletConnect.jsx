@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 
 function WalletConnect() {
   const [walletAddress, setWalletAddress] = useState('');
-  const [signature, setSignature] = useState('');
   const navigate = useNavigate();
 
   const connectWallet = async () => {
@@ -20,7 +19,6 @@ function WalletConnect() {
       });
 
       setWalletAddress(wallet);
-      setSignature(signed);
 
       navigate('/login', {
         state: {

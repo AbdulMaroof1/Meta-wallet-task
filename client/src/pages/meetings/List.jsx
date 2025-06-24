@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Button, Alert, ListGroup, Spinner } from 'react-bootstrap';
 import dayjs from 'dayjs';
 import config from '../../config/config';
-
 
 const API_BASE = `${config.API_BASE_URL}/meetings`;
 
@@ -13,23 +12,23 @@ const ListMeetings = () => {
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem('token');
-  const headers = {
+  const headers = useMemo(() => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
-  };
+  }), [token]);
 
-  const fetchMeetings = async () => {
+  const fetchMeetings = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch(API_BASE, { headers });
       const data = await res.json();
       setMeetings(data.data || []);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch meetings.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [headers]);
 
   const handleDelete = async (id) => {
     try {
@@ -38,14 +37,14 @@ const ListMeetings = () => {
         headers,
       });
       fetchMeetings();
-    } catch (err) {
+    } catch {
       setError('Failed to delete meeting.');
     }
   };
 
   useEffect(() => {
     fetchMeetings();
-  }, []);
+  }, [fetchMeetings]);
 
   return (
     <Container className="mt-5">
@@ -81,7 +80,13 @@ const ListMeetings = () => {
                 <p className="mb-0">
                   <strong>Link:</strong>{' '}
                   {meeting.meetingLink ? (
-                    <a href={meeting.meetingLink} target="_blank" rel="noreferrer">
+                    <a
+                      href={meeting.meetingLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="d-inline-block text-truncate"
+                      style={{ maxWidth: '250px', verticalAlign: 'middle' }}
+                    >
                       {meeting.meetingLink}
                     </a>
                   ) : (

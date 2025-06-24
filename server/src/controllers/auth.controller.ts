@@ -3,25 +3,28 @@ import jwt from 'jsonwebtoken';
 import { ethers } from 'ethers';
 import { ADMIN_EMAIL, ADMIN_PASSWORD, JWT_SECRET } from '../config/env';
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, walletAddress, signature } = req.body;
 
     if (!email || !password || !walletAddress || !signature) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      res.status(400).json({ message: 'Missing required fields' });
+      return;
     }
 
-    // Step 1: Verify the MetaMask signature
+    // Step 1: Verify MetaMask signature
     const message = `Login request for ${walletAddress}`;
     const recoveredAddress = ethers.verifyMessage(message, signature);
 
     if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
-      return res.status(401).json({ message: 'Invalid wallet signature' });
+      res.status(401).json({ message: 'Invalid wallet signature' });
+      return;
     }
 
-    // Step 2: Check email & password
+    // Step 2: Validate email and password
     if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      res.status(401).json({ message: 'Invalid email or password' });
+      return;
     }
 
     // Step 3: Generate JWT token
@@ -29,8 +32,7 @@ export const login = async (req: Request, res: Response) => {
       expiresIn: '1d',
     });
 
-    // Final Response
-    return res.status(200).json({
+    res.status(200).json({
       status: 200,
       message: 'success',
       data: {
@@ -42,7 +44,7 @@ export const login = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       status: 500,
       message: 'Login failed',
       error: (error as Error).message,

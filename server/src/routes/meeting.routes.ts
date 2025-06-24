@@ -5,8 +5,8 @@ import {
   getMeetingById,
   updateMeeting,
   deleteMeeting,
-} from '../controllers/meeting.controller.js';
-import { authenticate } from '../middleware/auth.middleware.js';
+} from '../controllers/meeting.controller';
+import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 

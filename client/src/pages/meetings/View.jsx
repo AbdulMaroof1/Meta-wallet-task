@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Card, Button, Alert, Spinner } from 'react-bootstrap';
 import config from '../../config/config';
@@ -11,7 +11,12 @@ const ViewMeeting = () => {
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem('token');
-  const headers = { Authorization: `Bearer ${token}` };
+
+  // ✅ useMemo ensures headers doesn't change on every render
+  const headers = useMemo(
+    () => ({ Authorization: `Bearer ${token}` }),
+    [token]
+  );
 
   useEffect(() => {
     const fetchMeeting = async () => {
@@ -20,7 +25,7 @@ const ViewMeeting = () => {
         const res = await fetch(`${config.API_BASE_URL}/meetings/${id}`, { headers });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Meeting not found');
-        setMeeting(data.data); // ✅ Correctly access .data
+        setMeeting(data.data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -29,7 +34,7 @@ const ViewMeeting = () => {
     };
 
     fetchMeeting();
-  }, [id]);
+  }, [id, headers]); // ✅ include memoized `headers`
 
   if (error) {
     return <Alert variant="danger" className="m-4">{error}</Alert>;

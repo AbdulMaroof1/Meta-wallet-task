@@ -9,11 +9,12 @@ export interface AuthRequest extends Request {
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No token provided' });
+    res.status(401).json({ message: 'No token provided' });
+    return;
   }
 
   const token = authHeader.split(' ')[1];
@@ -27,6 +28,6 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
+    res.status(401).json({ message: 'Invalid or expired token' });
   }
 };

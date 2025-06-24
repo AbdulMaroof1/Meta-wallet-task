@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import config from '../../config/config';
-
 
 const EditMeeting = () => {
   const { id } = useParams();
@@ -17,16 +16,16 @@ const EditMeeting = () => {
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem('token');
-  const headers = {
+  const headers = useMemo(() => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
-  };
+  }), [token]);
 
   useEffect(() => {
     const fetchMeeting = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:5000/api/meetings/${id}`, { headers });
+        const res = await fetch(`${config.API_BASE_URL}/meetings/${id}`, { headers });
         const result = await res.json();
         if (!res.ok) throw new Error(result.message || 'Not found');
 
@@ -34,7 +33,7 @@ const EditMeeting = () => {
 
         setTitle(m.title);
         setDescription(m.description);
-        setDate(m.date?.slice(0, 16)); // format for input type datetime-local
+        setDate(m.date?.slice(0, 16));
         setPlatform(m.platform);
         setMeetingLink(m.meetingLink);
       } catch (err) {
@@ -45,7 +44,7 @@ const EditMeeting = () => {
     };
 
     fetchMeeting();
-  }, [id]);
+  }, [id, headers]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -53,13 +52,7 @@ const EditMeeting = () => {
       const res = await fetch(`${config.API_BASE_URL}/meetings/${id}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify({
-          title,
-          description,
-          date,
-          platform,
-          meetingLink,
-        }),
+        body: JSON.stringify({ title, description, date, platform, meetingLink }),
       });
 
       if (!res.ok) {
@@ -121,6 +114,8 @@ const EditMeeting = () => {
             <Form.Select value={platform} onChange={(e) => setPlatform(e.target.value)} required>
               <option value="">Select Platform</option>
               <option value="zoom">Zoom</option>
+              <option value="google">Google Meet</option>
+              <option value="skype">Skype</option>
             </Form.Select>
           </Form.Group>
 

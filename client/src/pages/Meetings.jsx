@@ -1,5 +1,4 @@
-// src/pages/Meetings.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Container, Card, Button, ListGroup, Form, Alert, Row, Col } from 'react-bootstrap';
 import config from '../config/config';
 
@@ -12,35 +11,38 @@ const Meetings = () => {
   const [error, setError] = useState('');
 
   const token = localStorage.getItem('token');
-  const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
-  const fetchMeetings = async () => {
+  const headers = useMemo(() => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  }), [token]);
+
+  const fetchMeetings = useCallback(async () => {
     try {
       const res = await fetch(API_BASE, { headers });
-      const data = await res.json();
-      setMeetings(data);
-    } catch (err) {
+      const response = await res.json();
+      setMeetings(response?.data || []);
+    } catch {
       setError('Failed to load meetings');
     }
-  };
+  }, [headers]);
 
   useEffect(() => {
     fetchMeetings();
-  }, []);
+  }, [fetchMeetings]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(API_BASE, {
+      await fetch(API_BASE, {
         method: 'POST',
         headers,
         body: JSON.stringify({ title, description }),
       });
-      const data = await res.json();
       setTitle('');
       setDescription('');
       fetchMeetings();
-    } catch (err) {
+    } catch {
       setError('Failed to create meeting');
     }
   };
@@ -52,7 +54,7 @@ const Meetings = () => {
         headers,
       });
       fetchMeetings();
-    } catch (err) {
+    } catch {
       setError('Failed to delete meeting');
     }
   };
